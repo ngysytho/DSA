@@ -42,13 +42,32 @@
 #include <cassert>        // assert để debug
 #include <memory>         // smart pointer: unique_ptr, shared_ptr
 #include <complex> 
+
 using namespace std;
+int n, m;
+pair<int, int> a[1000006];
+map<int, int> mp;
 
-int main() {
-    string s;
-    cin >> s;
+int main()
+{
+    cin >> n >> m;
+    int ans = (n * (n - 1) * (n - 2)) / 6;
+    for (int i = 1; i <= m; i++)
+    {
+        cin >> a[i].first >> a[i].second;
+    }
+    for (int i = 1; i <= m; i++)
+    {
+        int ans1 = (a[i].second - a[i].first - 1) + (n - a[i].second) + (a[i].first - 1);
+        if (mp[a[i].first] >= 1)
+            ans1 -= mp[a[i].first], mp[a[i].first]--;
+        if (mp[a[i].second] >= 1)
+            ans1 -= mp[a[i].second], mp[a[i].second]--;
 
-    cout << s[0] << s.size() - 2 << s[s.size() - 1];
-
-    return 0;
+        if (ans1 >= 0)
+            ans -= ans1;
+        mp[a[i].first]++;
+        mp[a[i].second]++;
+    }
+    cout << ans;
 }
