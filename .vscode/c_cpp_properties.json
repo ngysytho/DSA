@@ -6,7 +6,7 @@
         "${workspaceFolder}/**"
       ],
       "compilerPath": "/usr/bin/clang",
-      "cppStandard": "c++17",
+      "cppStandard": "c++20",
       "cStandard": "${default}",
       "intelliSenseMode": "macos-clang-x64"
     }
