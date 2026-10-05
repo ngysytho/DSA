@@ -20,6 +20,11 @@ using namespace std;
 #define ll long long
 
 
+class Solution {
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+    }
+};
 
 
 int main(){

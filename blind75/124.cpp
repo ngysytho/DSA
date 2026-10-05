@@ -62,16 +62,20 @@ public:
 
 
 class Solution {
-void dfs(TreeNode* root, int& res){
-    if(!root) return;
+int dfs(TreeNode* root, int& res){
+    if(!root) return 0;
 
-    int left = root->left->right;
-    
+    int leftMax = max(dfs(root->left, res), 0);
+    int rightMax = max(dfs(root->right, res), 0);
+
+    res = max(res, root->val + leftMax + rightMax);
+
+    return root->val + max(leftMax, rightMax);
 }
 
 public:
     int maxPathSum(TreeNode* root) {
-        int res = INT_MIN;
+        int res = root->val;
 
         dfs(root, res);
 

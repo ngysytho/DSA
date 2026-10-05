@@ -105,6 +105,141 @@ public:
     }
 };
 
+
+//segment tree
+class MinIdx_Segtree {
+public:
+    int n;
+    const int INF = 1e9;
+    vector<int> A;
+    vector<int> tree;
+    MinIdx_Segtree(int N, vector<int>& a) {
+        this->n = N;
+        this->A = a;
+        while (__builtin_popcount(n) != 1) {
+            A.push_back(INF);
+            n++;
+        }
+        tree.resize(2 * n);
+        build();
+    }
+
+    void build() {
+        for (int i = 0; i < n; i++) {
+            tree[n + i] = i;
+        }
+        for (int j = n - 1; j >= 1; j--) {
+            int a = tree[j<<1];
+            int b = tree[(j<<1) + 1];
+            if(A[a]<=A[b])tree[j]=a;
+            else tree[j] = b;
+        }
+    }
+
+    void update(int i, int val) {
+        A[i] = val;
+        for (int j = (n + i) >> 1; j >= 1; j >>= 1) {
+            int a = tree[j<<1];
+            int b = tree[(j<<1) + 1];
+            if(A[a]<=A[b])tree[j]=a;
+            else tree[j] = b;
+        }
+    }
+
+    int query(int ql, int qh) {
+        return query(1, 0, n - 1, ql, qh);
+    }
+
+    int query(int node, int l, int h, int ql, int qh) {
+        if (ql > h || qh < l) return INF;
+        if (l >= ql && h <= qh) return tree[node];
+        int a = query(node << 1, l, (l + h) >> 1, ql, qh);
+        int b = query((node << 1) + 1, ((l + h) >> 1) + 1, h, ql, qh);
+        if(a==INF)return b;
+        if(b==INF)return a;
+        return A[a]<=A[b]?a:b;
+    }
+};
+
+class Solution {
+public:
+    int getMaxArea(vector<int>& heights, int l, int r, MinIdx_Segtree& st) {
+        if (l > r) return 0;
+        if (l == r) return heights[l];
+
+        int minIdx = st.query(l, r);
+        return max(max(getMaxArea(heights, l, minIdx - 1, st), getMaxArea(heights, minIdx + 1, r, st)), (r - l + 1) * heights[minIdx]);
+    }
+    int largestRectangleArea(vector<int>& heights) {
+        int n = heights.size();
+        MinIdx_Segtree st(n, heights);
+        return getMaxArea(heights, 0, n - 1, st);
+    }
+};
+
+
+
+class SegmentTree {
+public:
+    vector<int> tree;
+    vector<int> A;
+    int n;
+
+    SegmentTree(vector<int>& a) {
+        A = a;
+        n = a.size();
+        tree.resize(4 * n);
+        build(1, 0, n - 1);
+    }
+
+    void build(int node, int l, int r) {
+        // Base case: leaf
+        if (l == r) {
+            tree[node] = l;  // lưu index
+            return;
+        }
+
+        int mid = (l + r) / 2;
+
+        build(node * 2, l, mid);
+        build(node * 2 + 1, mid + 1, r);
+
+        int leftIdx = tree[node * 2];
+        int rightIdx = tree[node * 2 + 1];
+
+        if (A[leftIdx] <= A[rightIdx])
+            tree[node] = leftIdx;
+        else
+            tree[node] = rightIdx;
+    }
+
+    int query(int ql, int qr) {
+        return query(1, 0, n - 1, ql, qr);
+    }
+
+    int query(int node, int l, int r, int ql, int qr) {
+        // Không giao nhau
+        if (qr < l || ql > r)
+            return -1;
+
+        // Nằm hoàn toàn trong query
+        if (ql <= l && r <= qr)
+            return tree[node];
+
+        int mid = (l + r) / 2;
+
+        int left = query(node * 2, l, mid, ql, qr);
+        int right = query(node * 2 + 1, mid + 1, r, ql, qr);
+
+        if (left == -1) return right;
+        if (right == -1) return left;
+
+        return A[left] <= A[right] ? left : right;
+    }
+};
+
+
+
 int main(){
     ios::sync_with_stdio(0);
     cin.tie(0);
