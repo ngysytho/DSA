@@ -84,66 +84,144 @@ public:
 };
 
 
+
 class Solution {
+public:
+
+    
     unordered_map<string, vector<string>> adj;
-    unordered_set<string> visited;
+    set<string> visited;
 
-    void dfs(const string& email, vector<string>& component) {
-        visited.insert(email);
-        component.push_back(email);
 
-        for (const string& neighbor : adj[email]) {
-            if (visited.find(neighbor) == visited.end()) {
-                dfs(neighbor, component);
+    void dfs(string s, vector<string>& component){
+        component.push_back(s);
+
+        visited.insert(s);
+
+        for(auto& x : adj[s]){
+            if(visited.find(x) == visited.end()){
+                dfs(x, component);
             }
         }
+        return;
     }
-
-public:
     vector<vector<string>> accountsMerge(vector<vector<string>>& accounts) {
         unordered_map<string, string> emailToName;
 
-        // 1. Build the graph in O(N * K) time
-        for (const auto& account : accounts) {
-            const string& name = account[0];
-            const string& firstEmail = account[1];
+        for(auto& account : accounts){
+            string name = account[0];
+            string firstGmail = account[1];
 
-            for (int i = 1; i < account.size(); i++) {
-                const string& email = account[i];
-                emailToName[email] = name;
-
-                // Connect the first email with all other emails in the account
-                if (i > 1) {
-                    adj[firstEmail].push_back(email);
-                    adj[email].push_back(firstEmail);
+            for(int i = 1; i < account.size(); i++){
+                string gmail = account[i];
+                emailToName[gmail] = name;
+                if(i > 1){
+                    adj[firstGmail].push_back(account[i]);
+                    adj[account[i]].push_back(firstGmail);
                 }
             }
         }
 
-        // 2. Traverse connected components via DFS
-        vector<vector<string>> mergedAccounts;
+        vector<vector<string>> ans;
 
-        for (const auto& [email, name] : emailToName) {
-            if (visited.find(email) == visited.end()) {
+        for(auto& [gmail, name] : emailToName){
+            if(visited.find(gmail) == visited.end()){
                 vector<string> component;
-                dfs(email, component);
 
-                // 3. Sort emails alphabetically
+                dfs(gmail, component);
+
                 sort(component.begin(), component.end());
 
-                // 4. Prepend the account name
-                vector<string> merged;
-                merged.push_back(name);
-                merged.insert(merged.end(), component.begin(), component.end());
+                vector<string> merge;
+                merge.push_back(name);
 
-                mergedAccounts.push_back(merged);
+                merge.insert( merge.end(),component.begin(), component.end());
+
+                ans.push_back(merge);
+
             }
         }
 
-        return mergedAccounts;
+
+        return ans;
     }
 };
 
+
+class UnionSet{
+    vector<int> parent;
+    vector<int> rank;
+public:
+    UnionSet(int n){
+        parent.resize(n);
+
+        for(int i = 0; i < n; i++){
+            parent[i] = i;
+        }
+    }
+
+    int find(int x){
+        if(parent[x] != x){
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
+    }
+
+    bool find(int x1, int x2){
+        int p1 = find(x1);
+        int p2 = find(x2);
+
+        if(p1 == p2) return false;
+
+        p1 < p2 ? parent[p2] = p1 : parent[p1] = p2;
+
+        return true;
+    }
+};
+
+
+class Solution {
+public:
+    vector<vector<string>> accountsMerge(vector<vector<string>>& accounts) {
+        unordered_map<string, int> gmailToAcc;
+        int n =  accounts.size();
+
+        UnionSet uf(n);
+        
+        for(int i = 0; i < n; i++){
+            for(int j = 1; j < accounts[i].size(); j++){
+                if(gmailToAcc.count(accounts[i][j])){
+                    uf.find(i, gmailToAcc[accounts[i][j]]);
+                }else{
+                    gmailToAcc[accounts[i][j]] = i;
+                }
+            }
+        }
+
+        unordered_map<int, vector<string>> mp;
+
+        for(auto& [gmail, id] : gmailToAcc){
+            int leader = uf.find(id);
+            mp[leader].push_back(gmail);
+        }
+
+        vector<vector<string>> ans;
+
+        for(auto& [id, gmail] : mp){
+            sort(gmail.begin(), gmail.end());
+
+            vector<string> temp;
+
+            temp.push_back(accounts[id][0]);
+
+            temp.insert(temp.end(), gmail.begin(), gmail.end());
+
+            ans.push_back(temp);
+        }
+
+        return ans;
+    }
+};
 
 
 int main(){
